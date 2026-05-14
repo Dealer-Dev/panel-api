@@ -3,7 +3,7 @@
 clear
 
 echo "======================================"
-echo "        INSTALADOR DE PANEL"
+echo "      INSTALADOR DE PANEL"
 echo "======================================"
 
 sleep 1
@@ -14,7 +14,7 @@ sleep 1
 
 if [ "$(id -u)" != "0" ]; then
    echo ""
-   echo "❌ Ejecuta como root"
+   echo " Ejecuta como root"
    echo ""
    exit 1
 fi
@@ -29,12 +29,14 @@ API_PATH="/var/www/html/panel"
 
 CONFIG_FILE="/etc/panel-api.conf"
 
+APACHE_PORT="85"
+
 # ======================================
 # TOKEN
 # ======================================
 
 echo ""
-read -p " Ingresa TOKEN API: " TOKEN
+read -p "🔐 Ingresa TOKEN API: " TOKEN
 
 if [ -z "$TOKEN" ]; then
     echo ""
@@ -48,6 +50,7 @@ fi
 
 echo ""
 echo "📦 Actualizando sistema..."
+
 apt update -y
 
 # ======================================
@@ -55,9 +58,29 @@ apt update -y
 # ======================================
 
 echo ""
-echo " Instalando paquetes..."
+echo "📦 Instalando paquetes..."
 
 apt install apache2 php php-curl sudo curl wget net-tools -y
+
+# ======================================
+# APACHE PORT
+# ======================================
+
+echo ""
+echo " Configurando Apache en puerto $APACHE_PORT..."
+
+sed -i "s/Listen 80/Listen $APACHE_PORT/g" /etc/apache2/ports.conf
+
+sed -i "s/<VirtualHost \*:80>/<VirtualHost *:$APACHE_PORT>/g" /etc/apache2/sites-enabled/000-default.conf
+
+# ======================================
+# FIREWALL
+# ======================================
+
+echo ""
+echo " Abriendo puerto $APACHE_PORT..."
+
+ufw allow $APACHE_PORT/tcp >/dev/null 2>&1
 
 # ======================================
 # CREATE PANEL DIR
@@ -70,7 +93,7 @@ mkdir -p $API_PATH
 # ======================================
 
 echo ""
-echo " Descargando archivos..."
+echo " Descargando archivos necesarios..."
 
 wget -O $API_PATH/api.php \
 $REPO/api.php
@@ -104,7 +127,7 @@ echo ""
 echo " Configurando permisos sudo..."
 
 if ! grep -q "www-data ALL=(ALL) NOPASSWD:ALL" /etc/sudoers; then
-echo "www-data ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+    echo "www-data ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 fi
 
 # ======================================
@@ -121,21 +144,44 @@ systemctl restart apache2
 IP=$(curl -s ipv4.icanhazip.com)
 
 # ======================================
+# TEST APACHE
+# ======================================
+
+sleep 2
+
+STATUS=$(systemctl is-active apache2)
+
+# ======================================
 # DONE
 # ======================================
 
 clear
 
 echo "======================================"
-echo "      INSTALACION COMPLETA"
+echo "       INSTALACION COMPLETA"
 echo "======================================"
 echo ""
+
+if [ "$STATUS" = "active" ]; then
+    echo "🟢 Apache funcionando correctamente"
+else
+    echo "🔴 Apache NO pudo iniciar"
+fi
+
+echo ""
 echo " API URL:"
-echo "http://$IP:85/panel/api.php"
+echo "http://$IP:$APACHE_PORT/panel/api.php"
 echo ""
+
 echo " ONLINE URL:"
-echo "http://$IP:85/panel/online.php"
+echo "http://$IP:$APACHE_PORT/panel/online.php"
 echo ""
+
 echo " TOKEN:"
 echo "$TOKEN"
+echo ""
+
+echo "======================================"
+echo "         INSTALACION FINALIZADA"
+echo "======================================"
 echo ""
