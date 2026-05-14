@@ -1,44 +1,95 @@
 <?php
 
+// ==============================
+// 🔐 CONFIG
+// ==============================
+
+$configFile = "/etc/panel-api.conf";
+
+// crear config si no existe
+if (!file_exists($configFile)) {
+    file_put_contents($configFile, "TOKEN=123456");
+}
+
+$config = parse_ini_file($configFile);
+
+$API_TOKEN = $config['TOKEN'] ?? '123456';
+
+// ==============================
 // 🔐 TOKEN
+// ==============================
+
 $token = $_POST['token'] ?? '';
 
-if ($token != "123456") {
+if ($token != $API_TOKEN) {
     die("DENEGADO");
 }
 
 // ==============================
-// CREAR USUARIO
+// 🔥 CREAR USUARIO
 // ==============================
+
 if (!isset($_POST['action']) || $_POST['action'] == "create") {
 
-    $user = trim($_POST['user']);
-    $pass = trim($_POST['pass']);
+    $user = trim($_POST['user'] ?? '');
+    $pass = trim($_POST['pass'] ?? '');
 
-    exec("sudo useradd -m " . escapeshellarg($user));
-    exec("echo " . escapeshellarg("$user:$pass") . " | sudo chpasswd");
+    if ($user == '' || $pass == '') {
+        echo "ERROR_EMPTY";
+        exit();
+    }
 
-    echo "OK";
+    // validar si existe
+    exec("id " . escapeshellarg($user) . " 2>/dev/null", $o, $r);
+
+    if ($r == 0) {
+        echo "EXISTS";
+        exit();
+    }
+
+    exec("sudo useradd -m " . escapeshellarg($user) . " 2>&1", $out1, $r1);
+
+    exec("echo " . escapeshellarg("$user:$pass") . " | sudo chpasswd 2>&1", $out2, $r2);
+
+    if ($r1 === 0 && $r2 === 0) {
+        echo "OK";
+    } else {
+        echo "ERROR_CREATE";
+    }
+
     exit();
 }
 
 // ==============================
-// ELIMINAR USUARIO
+// 🔥 ELIMINAR USUARIO
 // ==============================
+
 if (isset($_POST['action']) && $_POST['action'] == "delete") {
 
-    $user = trim($_POST['user']);
+    $user = trim($_POST['user'] ?? '');
 
-    exec("sudo pkill -9 -u " . escapeshellarg($user));
-    exec("sudo userdel -f -r " . escapeshellarg($user));
+    if ($user == '') {
+        echo "ERROR_USER";
+        exit();
+    }
 
-    echo "DEL_OK";
+    exec("sudo pkill -9 -u " . escapeshellarg($user) . " 2>&1");
+
+    exec("sudo userdel -f -r " . escapeshellarg($user) . " 2>&1", $out, $ret);
+
+    if ($ret === 0) {
+        echo "DEL_OK";
+    } else {
+        echo "ERROR_DELETE";
+    }
+
     exit();
 }
 
 // ==============================
-// ONLINE
+// 🔥 ONLINE
 // ==============================
+
 if (isset($_POST['action']) && $_POST['action'] == "online") {
 
     $output = [];
@@ -57,5 +108,9 @@ if (isset($_POST['action']) && $_POST['action'] == "online") {
     echo json_encode($output);
     exit();
 }
+
+// ==============================
+// ❌ DEFAULT
+// ==============================
 
 echo "INVALID";
