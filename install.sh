@@ -9,7 +9,7 @@ echo "======================================"
 sleep 1
 
 # ======================================
-# ROOT CHECK
+# ROOT
 # ======================================
 
 if [ "$(id -u)" != "0" ]; then
@@ -33,13 +33,15 @@ CONFIG_FILE="/etc/panel-api.conf"
 
 APACHE_PORT="8888"
 
+VHOST_FILE="/etc/apache2/sites-available/panel-api.conf"
+
 # ======================================
 # TOKEN
 # ======================================
 
 echo ""
 
-read -p " Ingresa TOKEN para esta VPS papu: " TOKEN
+read -p "Ingresa TOKEN para tu vps: " TOKEN
 
 if [ -z "$TOKEN" ]; then
 
@@ -54,7 +56,7 @@ fi
 # ======================================
 
 echo ""
-echo "...Actualizando sistema..."
+echo "📦 Actualizando sistema..."
 
 
 # ======================================
@@ -67,7 +69,7 @@ echo "📦 Instalando paquetes..."
 apt install apache2 php php-curl sudo curl wget net-tools -y
 
 # ======================================
-# APACHE
+# APACHE PORT
 # ======================================
 
 echo ""
@@ -75,21 +77,9 @@ echo "🌐 Configurando Apache..."
 
 if ! grep -q "Listen $APACHE_PORT" /etc/apache2/ports.conf; then
 
-    echo "Listen $APACHE_PORT" >> /etc/apache2/ports.conf
+    echo "Listen $APACHE_PORT" \
+    >> /etc/apache2/ports.conf
 fi
-
-sed -i \
-"s/<VirtualHost \*:80>/<VirtualHost *:$APACHE_PORT>/g" \
-/etc/apache2/sites-enabled/000-default.conf
-
-# ======================================
-# FIREWALL
-# ======================================
-
-echo ""
-echo "🔥 Abriendo puerto $APACHE_PORT..."
-
-ufw allow $APACHE_PORT/tcp >/dev/null 2>&1
 
 # ======================================
 # CREATE PANEL DIR
@@ -111,7 +101,7 @@ wget -O $API_PATH/online.php \
 $REPO/online.php
 
 # ======================================
-# CREATE CONFIG
+# CONFIG TOKEN
 # ======================================
 
 echo ""
@@ -131,6 +121,34 @@ chmod 755 $API_PATH/online.php
 chown -R www-data:www-data $API_PATH
 
 # ======================================
+# VIRTUAL HOST
+# ======================================
+
+echo ""
+echo "⚡ Creando VirtualHost..."
+
+cat > $VHOST_FILE <<EOF
+<VirtualHost *:$APACHE_PORT>
+
+    ServerAdmin localhost
+
+    DocumentRoot /var/www/html
+
+    <Directory /var/www/html>
+        AllowOverride All
+        Require all granted
+    </Directory>
+
+</VirtualHost>
+EOF
+
+# ======================================
+# ENABLE SITE
+# ======================================
+
+a2ensite panel-api.conf >/dev/null 2>&1
+
+# ======================================
 # SUDOERS
 # ======================================
 
@@ -147,7 +165,22 @@ if ! grep -q \
 fi
 
 # ======================================
-# RESTART SERVICES
+# FIREWALL
+# ======================================
+
+echo ""
+echo "🔥 Abriendo puerto..."
+
+ufw allow $APACHE_PORT/tcp >/dev/null 2>&1
+
+# ======================================
+# APACHE TEST
+# ======================================
+
+apachectl configtest
+
+# ======================================
+# RESTART
 # ======================================
 
 systemctl enable apache2
@@ -155,18 +188,14 @@ systemctl enable apache2
 systemctl restart apache2
 
 # ======================================
-# GET IP
-# ======================================
-
-IP=$(curl -s ipv4.icanhazip.com)
-
-# ======================================
-# APACHE STATUS
+# STATUS
 # ======================================
 
 sleep 2
 
 STATUS=$(systemctl is-active apache2)
+
+IP=$(curl -s ipv4.icanhazip.com)
 
 # ======================================
 # FINAL
@@ -181,7 +210,7 @@ echo ""
 
 if [ "$STATUS" = "active" ]; then
 
-    echo "🟢 Apache funcionando correctamente"
+    echo "🟢 Apache funcionando"
 
 else
 
@@ -190,18 +219,19 @@ fi
 
 echo ""
 echo "🌐 API URL:"
-echo "http://$IP/panel/api.php"
+echo "http://$IP:$APACHE_PORT/panel/api.php"
 echo ""
 
 echo "🌐 ONLINE URL:"
-echo "http://$IP/panel/online.php"
+echo "http://$IP:$APACHE_PORT/panel/online.php"
 echo ""
 
-echo "🔐 TOKEN VPS:"
+echo "🔐 TOKEN:"
 echo "$TOKEN"
+echo "(este token va en lugar de contraseña de tu vps en el panel)"
 echo ""
 
 echo "======================================"
-echo "      PANEL API INSTALADO"
+echo "        PANEL INSTALADO"
 echo "======================================"
 echo ""
