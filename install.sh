@@ -3,7 +3,7 @@
 clear
 
 echo "======================================"
-echo "      INSTALADOR PANEL"
+echo "      INSTALADOR PANEL WEB DEALER"
 echo "======================================"
 
 sleep 1
