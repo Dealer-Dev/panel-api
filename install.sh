@@ -3,7 +3,7 @@
 clear
 
 echo "======================================"
-echo "      INSTALADOR DE PANEL API"
+echo "      INSTALADOR PANEL API"
 echo "======================================"
 
 sleep 1
@@ -15,7 +15,7 @@ sleep 1
 if [ "$(id -u)" != "0" ]; then
 
    echo ""
-   echo " Ejecuta como root"
+   echo "❌ Ejecuta como root"
    echo ""
 
    exit 1
@@ -39,7 +39,7 @@ APACHE_PORT="80"
 
 echo ""
 
-read -p "🔐 Ingresa TOKEN API: " TOKEN
+read -p "🔐 Ingresa TOKEN API para esta VPS: " TOKEN
 
 if [ -z "$TOKEN" ]; then
 
@@ -54,7 +54,8 @@ fi
 # ======================================
 
 echo ""
-echo "📦 Actualizando sistema...XD"
+echo "...Actualizando sistema..."
+
 
 # ======================================
 # INSTALL PACKAGES
@@ -66,7 +67,7 @@ echo "📦 Instalando paquetes..."
 apt install apache2 php php-curl sudo curl wget net-tools -y
 
 # ======================================
-# APACHE PORT
+# APACHE
 # ======================================
 
 echo ""
@@ -114,7 +115,7 @@ $REPO/online.php
 # ======================================
 
 echo ""
-echo "🔐 Configurando token..."
+echo "🔐 Configurando TOKEN..."
 
 echo "TOKEN=$TOKEN" > $CONFIG_FILE
 
@@ -134,7 +135,7 @@ chown -R www-data:www-data $API_PATH
 # ======================================
 
 echo ""
-echo "⚡ Configurando permisos sudo..."
+echo "⚡ Configurando sudo..."
 
 if ! grep -q \
 "www-data ALL=(ALL) NOPASSWD:ALL" \
@@ -146,7 +147,7 @@ if ! grep -q \
 fi
 
 # ======================================
-# ENABLE SERVICES
+# RESTART SERVICES
 # ======================================
 
 systemctl enable apache2
@@ -160,7 +161,7 @@ systemctl restart apache2
 IP=$(curl -s ipv4.icanhazip.com)
 
 # ======================================
-# TEST APACHE
+# APACHE STATUS
 # ======================================
 
 sleep 2
@@ -168,13 +169,13 @@ sleep 2
 STATUS=$(systemctl is-active apache2)
 
 # ======================================
-# DONE
+# FINAL
 # ======================================
 
 clear
 
 echo "======================================"
-echo "       INSTALACION COMPLETA"
+echo "      INSTALACION COMPLETA"
 echo "======================================"
 echo ""
 
@@ -196,11 +197,11 @@ echo "🌐 ONLINE URL:"
 echo "http://$IP/panel/online.php"
 echo ""
 
-echo "🔐 TOKEN:"
+echo "🔐 TOKEN VPS:"
 echo "$TOKEN"
 echo ""
 
 echo "======================================"
-echo "         INSTALACION FINALIZADA"
+echo "      PANEL API INSTALADO"
 echo "======================================"
 echo ""
