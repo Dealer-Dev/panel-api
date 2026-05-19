@@ -3,7 +3,7 @@
 clear
 
 echo "======================================"
-echo "      INSTALADOR PANEL WEB DEALER"
+echo "      INSTALADOR PANEL WEB DEALER..."
 echo "======================================"
 
 sleep 1
@@ -31,7 +31,7 @@ API_PATH="/var/www/html/panel"
 
 CONFIG_FILE="/etc/panel-api.conf"
 
-APACHE_PORT="8888"
+APACHE_PORT="80"
 
 VHOST_FILE="/etc/apache2/sites-available/panel-api.conf"
 
