@@ -51,7 +51,6 @@ fi
 echo ""
 echo "📦 Actualizando sistema..."
 
-apt update -y
 
 # ======================================
 # INSTALL PACKAGES
