@@ -3,7 +3,7 @@
 clear
 
 echo "======================================"
-echo "      INSTALADOR PANEL API"
+echo "      INSTALADOR PANEL"
 echo "======================================"
 
 sleep 1
@@ -210,11 +210,11 @@ echo ""
 
 if [ "$STATUS" = "active" ]; then
 
-    echo "🟢 Apache funcionando"
+    echo "🟢 Panel instalado con éxito"
 
 else
 
-    echo "🔴 Apache NO pudo iniciar"
+    echo "🔴 No se pudo instalar el panel"
 fi
 
 echo ""
@@ -232,6 +232,6 @@ echo "(este token va en lugar de contraseña de tu vps en el panel)"
 echo ""
 
 echo "======================================"
-echo "        PANEL INSTALADO"
+echo "        SCRIPT FINALIZADO"
 echo "======================================"
 echo ""
