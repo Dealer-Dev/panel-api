@@ -109,7 +109,7 @@ echo "🔐 Configurando TOKEN..."
 
 echo "TOKEN=$TOKEN" > $CONFIG_FILE
 
-chmod 600 $CONFIG_FILE
+chmod 644 $CONFIG_FILE
 
 # ======================================
 # PERMISSIONS
