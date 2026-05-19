@@ -31,7 +31,7 @@ API_PATH="/var/www/html/panel"
 
 CONFIG_FILE="/etc/panel-api.conf"
 
-APACHE_PORT="2052"
+APACHE_PORT="8888"
 
 # ======================================
 # TOKEN
@@ -39,7 +39,7 @@ APACHE_PORT="2052"
 
 echo ""
 
-read -p " Ingresa TOKEN para esta VPS 😎: " TOKEN
+read -p " Ingresa TOKEN para esta VPS papu: " TOKEN
 
 if [ -z "$TOKEN" ]; then
 
