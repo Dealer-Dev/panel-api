@@ -49,7 +49,7 @@ fi
 # ======================================
 
 echo ""
-echo "📦 Actualizando sistema..."
+echo "📦 Actualizando sistema......"
 
 
 # ======================================
