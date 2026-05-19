@@ -3,7 +3,7 @@
 clear
 
 echo "======================================"
-echo "      INSTALADOR DE PANEL"
+echo "      INSTALADOR DE PANEL API"
 echo "======================================"
 
 sleep 1
@@ -13,9 +13,11 @@ sleep 1
 # ======================================
 
 if [ "$(id -u)" != "0" ]; then
+
    echo ""
    echo " Ejecuta como root"
    echo ""
+
    exit 1
 fi
 
@@ -29,18 +31,21 @@ API_PATH="/var/www/html/panel"
 
 CONFIG_FILE="/etc/panel-api.conf"
 
-APACHE_PORT="85"
+APACHE_PORT="80"
 
 # ======================================
 # TOKEN
 # ======================================
 
 echo ""
+
 read -p "🔐 Ingresa TOKEN API: " TOKEN
 
 if [ -z "$TOKEN" ]; then
+
     echo ""
     echo "❌ Token inválido"
+
     exit 1
 fi
 
@@ -49,8 +54,7 @@ fi
 # ======================================
 
 echo ""
-echo "📦 Actualizando sistema......"
-
+echo "📦 Actualizando sistema...XD"
 
 # ======================================
 # INSTALL PACKAGES
@@ -66,18 +70,23 @@ apt install apache2 php php-curl sudo curl wget net-tools -y
 # ======================================
 
 echo ""
-echo " Configurando Apache en puerto $APACHE_PORT..."
+echo "🌐 Configurando Apache..."
 
-sed -i "s/Listen 80/Listen $APACHE_PORT/g" /etc/apache2/ports.conf
+if ! grep -q "Listen $APACHE_PORT" /etc/apache2/ports.conf; then
 
-sed -i "s/<VirtualHost \*:80>/<VirtualHost *:$APACHE_PORT>/g" /etc/apache2/sites-enabled/000-default.conf
+    echo "Listen $APACHE_PORT" >> /etc/apache2/ports.conf
+fi
+
+sed -i \
+"s/<VirtualHost \*:80>/<VirtualHost *:$APACHE_PORT>/g" \
+/etc/apache2/sites-enabled/000-default.conf
 
 # ======================================
 # FIREWALL
 # ======================================
 
 echo ""
-echo " Abriendo puerto $APACHE_PORT..."
+echo "🔥 Abriendo puerto $APACHE_PORT..."
 
 ufw allow $APACHE_PORT/tcp >/dev/null 2>&1
 
@@ -92,7 +101,7 @@ mkdir -p $API_PATH
 # ======================================
 
 echo ""
-echo " Descargando archivos necesarios..."
+echo "📥 Descargando archivos..."
 
 wget -O $API_PATH/api.php \
 $REPO/api.php
@@ -105,7 +114,7 @@ $REPO/online.php
 # ======================================
 
 echo ""
-echo " Configurando token..."
+echo "🔐 Configurando token..."
 
 echo "TOKEN=$TOKEN" > $CONFIG_FILE
 
@@ -118,15 +127,22 @@ chmod 600 $CONFIG_FILE
 chmod 755 $API_PATH/api.php
 chmod 755 $API_PATH/online.php
 
+chown -R www-data:www-data $API_PATH
+
 # ======================================
 # SUDOERS
 # ======================================
 
 echo ""
-echo " Configurando permisos sudo..."
+echo "⚡ Configurando permisos sudo..."
 
-if ! grep -q "www-data ALL=(ALL) NOPASSWD:ALL" /etc/sudoers; then
-    echo "www-data ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+if ! grep -q \
+"www-data ALL=(ALL) NOPASSWD:ALL" \
+/etc/sudoers; then
+
+    echo \
+"www-data ALL=(ALL) NOPASSWD:ALL" \
+>> /etc/sudoers
 fi
 
 # ======================================
@@ -134,6 +150,7 @@ fi
 # ======================================
 
 systemctl enable apache2
+
 systemctl restart apache2
 
 # ======================================
@@ -162,21 +179,24 @@ echo "======================================"
 echo ""
 
 if [ "$STATUS" = "active" ]; then
+
     echo "🟢 Apache funcionando correctamente"
+
 else
+
     echo "🔴 Apache NO pudo iniciar"
 fi
 
 echo ""
-echo " API URL:"
-echo "http://$IP:$APACHE_PORT/panel/api.php"
+echo "🌐 API URL:"
+echo "http://$IP/panel/api.php"
 echo ""
 
-echo " ONLINE URL:"
-echo "http://$IP:$APACHE_PORT/panel/online.php"
+echo "🌐 ONLINE URL:"
+echo "http://$IP/panel/online.php"
 echo ""
 
-echo " TOKEN:"
+echo "🔐 TOKEN:"
 echo "$TOKEN"
 echo ""
 
